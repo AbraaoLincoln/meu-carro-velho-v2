@@ -14,6 +14,8 @@ import javax.inject.Inject;
 import static com.meucarrovelho.utils.TestUtils.createUser;
 import static com.meucarrovelho.utils.TestUtils.generateIdForUser;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @QuarkusTest
 public class UserServiceTest {
@@ -39,6 +41,7 @@ public class UserServiceTest {
         assertEquals(1, savedUser.getId());
         assertEquals(user.getName(), savedUser.getName());
         assertEquals(user.getEmail(), savedUser.getEmail());
+        verify(userRepository, times(1)).persist(user);
     }
 
     @Test
@@ -58,6 +61,7 @@ public class UserServiceTest {
             //Then
             assertTrue(be instanceof BusinessException);
             assertEquals(ExceptionMessage.INVALID_EMAIL, be.getMessage());
+            verify(userRepository, times(0)).persist(user);
         }
     }
 }
