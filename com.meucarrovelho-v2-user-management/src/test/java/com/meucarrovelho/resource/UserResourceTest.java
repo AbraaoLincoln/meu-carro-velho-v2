@@ -4,6 +4,7 @@ import com.meucarrovelho.domain.entity.User;
 import com.meucarrovelho.exception.BusinessException;
 import com.meucarrovelho.exception.ExceptionMessage;
 import com.meucarrovelho.service.UserService;
+import com.meucarrovelho.utils.TestUtils;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.restassured.RestAssured;
@@ -14,6 +15,8 @@ import org.jboss.resteasy.reactive.RestResponse;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static com.meucarrovelho.utils.TestUtils.createUser;
+import static com.meucarrovelho.utils.TestUtils.generateIdForUser;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
@@ -61,18 +64,5 @@ public class UserResourceTest {
                 .then()
                 .statusCode(RestResponse.StatusCode.BAD_REQUEST)
                 .body(is(ExceptionMessage.INVALID_EMAIL));
-    }
-
-    private User createUser() {
-        var newUser = new User();
-        newUser.setName("teste");
-        newUser.setPassword("123");
-        newUser.setEmail("teste@mail");
-        return newUser;
-    }
-
-    private User generateIdForUser(User user) {
-        user.setId(1);
-        return user;
     }
 }
