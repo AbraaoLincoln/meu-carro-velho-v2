@@ -17,11 +17,13 @@ import org.mockito.Mockito;
 
 import static com.meucarrovelho.utils.TestUtils.createUser;
 import static com.meucarrovelho.utils.TestUtils.generateIdForUser;
+import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
 public class UserResourceTest {
+    private final String USERS_API = "/api/users";
 
     @InjectMock
     UserService userService;
@@ -35,17 +37,17 @@ public class UserResourceTest {
                 .thenReturn(generateIdForUser(savedUser));
 
         //
-        RestAssured.given()
-                   .contentType(ContentType.JSON)
-                   .body(newUser)
-                   .when()
-                   .post("/api/users")
-                   .then()
-                   .statusCode(RestResponse.StatusCode.CREATED)
-                   .contentType(ContentType.JSON)
-                   .body("id", equalTo(savedUser.getId()))
-                   .body("name", equalTo(savedUser.getName()))
-                   .body("email", equalTo(savedUser.getEmail()));
+        given()
+        .contentType(ContentType.JSON)
+        .body(newUser)
+        .when()
+        .post(USERS_API)
+        .then()
+        .statusCode(RestResponse.StatusCode.CREATED)
+        .contentType(ContentType.JSON)
+        .body("id", equalTo(savedUser.getId()))
+        .body("name", equalTo(savedUser.getName()))
+        .body("email", equalTo(savedUser.getEmail()));
     }
 
     @Test
@@ -56,13 +58,30 @@ public class UserResourceTest {
                     .thenThrow(new BusinessException(ExceptionMessage.INVALID_EMAIL));
 
         //
-        RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(newUser)
-                .when()
-                .post("/api/users")
-                .then()
-                .statusCode(RestResponse.StatusCode.BAD_REQUEST)
-                .body(is(ExceptionMessage.INVALID_EMAIL));
+        given()
+        .contentType(ContentType.JSON)
+        .body(newUser)
+        .when()
+        .post(USERS_API)
+        .then()
+        .statusCode(RestResponse.StatusCode.BAD_REQUEST)
+        .body(is(ExceptionMessage.INVALID_EMAIL));
+    }
+
+    @Test
+    public void shouldNotSaveNemUserWithEmailAlreadyRegister() {
+        //Setup
+        var user = createUser();
+        Mockito.when(userService.createNewUser(Mockito.any(User.class)))
+                .thenThrow( new BusinessException(ExceptionMessage.EMAIL_ALREADY_IN_USE));
+
+        given()
+        .contentType(ContentType.JSON)
+        .body(user)
+        .when()
+        .post(USERS_API)
+        .then()
+        .statusCode(RestResponse.StatusCode.BAD_REQUEST)
+        .body(is(ExceptionMessage.EMAIL_ALREADY_IN_USE));
     }
 }

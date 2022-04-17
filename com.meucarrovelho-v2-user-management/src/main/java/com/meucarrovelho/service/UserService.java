@@ -30,5 +30,8 @@ public class UserService {
 
         if(!result.find())
             throw new BusinessException(ExceptionMessage.INVALID_EMAIL);
+
+        if(userRepository.existsByEmail(email))
+            throw new BusinessException(ExceptionMessage.EMAIL_ALREADY_IN_USE);
     }
 }
